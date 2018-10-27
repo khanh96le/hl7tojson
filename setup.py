@@ -7,17 +7,17 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="hl7tojson",
-    version="0.0.12",
+    version="0.0.1",
     author="Jerry Le",
     author_email="khanh96le@gmail.com",
-    description="A lib to convert HL7 message version 2 to json with human "
-                "readable description",
+    description="A simple library to convert HL7 message version 2 to JSON "
+                "with human readable description",
     keywords=[
         'HL7', 'Health Level 7', 'healthcare', 'health care', 'medical record'
     ],
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/pypa/sampleproject",
+    url="https://github.com/jerry-le/hl7tojson",
     packages=setuptools.find_packages(),
     include_package_data=True,
     package_data={'hl7tojson': ['./data/*/*.pickle']},
