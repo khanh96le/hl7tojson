@@ -1,22 +1,34 @@
 # -*- coding: utf-8 -*-
-import os
-import json
 import textwrap
+from os.path import dirname
 
 import hl7
 
 fields = segments = messages = None
 
-HL7_VERSION = '2.7'
-CWD = os.getcwd()
+HL7_VERSION = '27'
+FILE_PATH = dirname(__file__)
+
+import pickle
+
+with open('{}/data/{}/fields.pickle'.format(FILE_PATH, HL7_VERSION)) as f:
+    fields = pickle.load(f)
+
+with open('{}/data/{}/messages.pickle'.format(FILE_PATH, HL7_VERSION)) as f:
+    messages = pickle.load(f)
+
+with open('{}/data/{}/segments.pickle'.format(FILE_PATH, HL7_VERSION)) as f:
+    segments = pickle.load(f)
 
 
-with open('{}/data/{}/fields.json'.format(CWD, HL7_VERSION)) as f:
-    fields = json.loads(f.read())
-with open('{}/data/{}/messages.json'.format(CWD, HL7_VERSION)) as f:
-    messages = json.loads(f.read())
-with open('{}/data/{}/segments.json'.format(CWD, HL7_VERSION)) as f:
-    segments = json.loads(f.read())
+def parse(message):
+    sequence = parse_hl7_message(message)
+    if not validate_segments(sequence):
+        raise Exception('The message is invalid')
+
+    sequence_with_description = update_description(0, sequence)
+    data = hl7_message_to_dict(sequence_with_description)
+    return data
 
 
 def parse_hl7_message(message):
@@ -33,7 +45,7 @@ def validate_segments(message):
     if not isinstance(message, hl7.Message):
         raise Exception('The message should be an instance of hl7.Message')
 
-    message_type = message[0][9][0][2]
+    message_type = '{}_{}'.format(message[0][9][0][0], message[0][9][0][1])
     allow_segments = [
         segment['name']
         for segment in messages[str(message_type)]['segments']['segments']
@@ -46,7 +58,8 @@ def update_description(idx, sequence, **kwargs):
     """Update description for each sequence"""
 
     if isinstance(sequence, hl7.Message):
-        message_type = str(sequence[0][9][0][2])
+        message_type = '{}_{}'.format(
+            sequence[0][9][0][0], sequence[0][9][0][1])
         sequence.desc = messages[message_type]['desc']
         sequence.name = messages[message_type]['name']
     elif isinstance(sequence, hl7.Segment):
@@ -64,8 +77,14 @@ def update_description(idx, sequence, **kwargs):
         sequence.datatype = field.datatype
     elif isinstance(sequence, hl7.Component):
         field = kwargs['parent']
-        sequence.desc = fields[field.datatype]['subfields'][idx]['desc']
-        sequence.datatype = fields[field.datatype]['subfields'][idx]['datatype']
+        if fields[field.datatype]['subfields']:
+            description = fields[field.datatype]['subfields'][idx]['desc']
+            datatype = fields[field.datatype]['subfields'][idx]['datatype']
+        else:
+            description = fields[field.datatype]['desc']
+            datatype = field.datatype
+        sequence.desc = description
+        sequence.datatype = datatype
 
     if type(sequence) in [hl7.Message, hl7.Segment, hl7.Field, hl7.Repetition]:
         for idx, sub_sequence in enumerate(sequence):
@@ -138,6 +157,9 @@ def _get_repetitions_data(field):
 
 def _get_components_data(repetition):
     components_data = []
+    if not isinstance(repetition[0], hl7.Component):
+        return components_data
+
     for idx, component in enumerate(repetition):
         if not str(component):
             continue
