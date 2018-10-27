@@ -827,5 +827,6 @@ parser.parse(message)
 ```
 
 ## TODO
-- [] Support all versions of HL7 version 2
-- [] Support data description in multiple languages
+- Support all versions of HL7 version 2
+- Support data description in multiple languages
+- Add CI

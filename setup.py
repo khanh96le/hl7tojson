@@ -7,7 +7,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="hl7tojson",
-    version="0.0.1",
+    version="0.0.2",
     author="Jerry Le",
     author_email="khanh96le@gmail.com",
     description="A simple library to convert HL7 message version 2 to JSON "
