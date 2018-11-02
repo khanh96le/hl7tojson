@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 import json
 from unittest import TestCase
+
+import pytest
+
 from hl7tojson import parser
-from tests.samples import message1, message2
+from tests.samples import message1, message2, message3
 
 
 class TestParserValidate(TestCase):
@@ -22,6 +25,10 @@ class TestParserValidate(TestCase):
     def test_validate_message(self):
         h = parser.parse_hl7_message(message1)
         assert parser.validate_segments(h)
+
+    def test_invalid_message(self):
+        h = parser.parse_hl7_message(message3)
+        assert not parser.validate_segments(h)
 
     def test_hl7_message_to_dict(self):
         h = parser.parse_hl7_message(message1)
@@ -52,3 +59,10 @@ class TestParserValidate(TestCase):
     def test_parser(self):
         data = parser.parse(message1)
         assert data is not None
+
+    def test_get_segments(self):
+        h = parser.parse(message1)
+        segments_name = parser.get_segments_name_from_message(h)
+        assert len(segments_name) > 0
+        assert set(segments_name) == {'MSH', 'EVN', 'PID', 'PV1', 'OBX', 'AL1',
+                                      'DG1'}

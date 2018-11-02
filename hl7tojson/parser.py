@@ -1,34 +1,46 @@
 # -*- coding: utf-8 -*-
 import textwrap
-from os.path import dirname
 
 import hl7
 
-fields = segments = messages = None
+from hl7tojson.dictionary import Dictionary
+from hl7tojson.exceptions import ParserError
 
-HL7_VERSION = '27'
-FILE_PATH = dirname(__file__)
-
-import pickle
-
-with open('{}/data/{}/fields.pickle'.format(FILE_PATH, HL7_VERSION)) as f:
-    fields = pickle.load(f)
-
-with open('{}/data/{}/messages.pickle'.format(FILE_PATH, HL7_VERSION)) as f:
-    messages = pickle.load(f)
-
-with open('{}/data/{}/segments.pickle'.format(FILE_PATH, HL7_VERSION)) as f:
-    segments = pickle.load(f)
+dictionary = Dictionary.Instance()
 
 
 def parse(message):
-    sequence = parse_hl7_message(message)
-    if not validate_segments(sequence):
-        raise Exception('The message is invalid')
+    try:
+        sequence = parse_hl7_message(message)
+        sequence.name = '{}_{}'.format(
+            sequence[0][9][0][0], sequence[0][9][0][1])
+    except Exception:
+        raise ParserError('Cannot parse this message. Please make sure '
+                          'the input is HL7 message.')
+    return sequence
 
-    sequence_with_description = update_description(0, sequence)
-    data = hl7_message_to_dict(sequence_with_description)
-    return data
+
+def get_segments_name_from_message(message):
+    """Get list segments name from a message
+
+    :param: message - instance of :py:class:`hl7.Message`
+    :rtype: list
+    """
+
+    if not isinstance(message, hl7.Message):
+        pass
+
+    return [segment[0][0] for segment in message]
+
+
+# def parse(message):
+#     sequence = parse_hl7_message(message)
+#     if not validate_segments(sequence):
+#         raise Exception('The message is invalid')
+#
+#     sequence_with_description = update_description(0, sequence)
+#     data = hl7_message_to_dict(sequence_with_description)
+#     return data
 
 
 def parse_hl7_message(message):
@@ -48,7 +60,7 @@ def validate_segments(message):
     message_type = '{}_{}'.format(message[0][9][0][0], message[0][9][0][1])
     allow_segments = [
         segment['name']
-        for segment in messages[str(message_type)]['segments']['segments']
+        for segment in dictionary.messages[str(message_type)]['segments']['segments']
     ]
     actual_segments = [str(segment[0]) for segment in message]
     return set(actual_segments) < set(allow_segments)
@@ -60,28 +72,28 @@ def update_description(idx, sequence, **kwargs):
     if isinstance(sequence, hl7.Message):
         message_type = '{}_{}'.format(
             sequence[0][9][0][0], sequence[0][9][0][1])
-        sequence.desc = messages[message_type]['desc']
-        sequence.name = messages[message_type]['name']
+        sequence.desc = dictionary.messages[message_type]['desc']
+        sequence.name = dictionary.messages[message_type]['name']
     elif isinstance(sequence, hl7.Segment):
         segment_type = str(sequence[0])
-        sequence.desc = segments[segment_type]['desc']
+        sequence.desc = dictionary.segments[segment_type]['desc']
     elif isinstance(sequence, hl7.Field):
         if idx == 0:
             return
         segment_type = str(kwargs['parent'][0])
-        sequence.desc = segments[segment_type]['fields'][idx - 1]['desc']
-        sequence.datatype = segments[segment_type]['fields'][idx - 1]['datatype']
+        sequence.desc = dictionary.segments[segment_type]['fields'][idx - 1]['desc']
+        sequence.datatype = dictionary.segments[segment_type]['fields'][idx - 1]['datatype']
     elif isinstance(sequence, hl7.Repetition):
         field = kwargs['parent']
         sequence.desc = field.desc
         sequence.datatype = field.datatype
     elif isinstance(sequence, hl7.Component):
         field = kwargs['parent']
-        if fields[field.datatype]['subfields']:
-            description = fields[field.datatype]['subfields'][idx]['desc']
-            datatype = fields[field.datatype]['subfields'][idx]['datatype']
+        if dictionary.fields[field.datatype]['subfields']:
+            description = dictionary.fields[field.datatype]['subfields'][idx]['desc']
+            datatype = dictionary.fields[field.datatype]['subfields'][idx]['datatype']
         else:
-            description = fields[field.datatype]['desc']
+            description = dictionary.fields[field.datatype]['desc']
             datatype = field.datatype
         sequence.desc = description
         sequence.datatype = datatype
@@ -103,7 +115,7 @@ def hl7_message_to_dict(message):
 
 def _get_message_info(message):
     return {
-        'message_version': HL7_VERSION,
+        'message_version': dictionary.version,
         'message_type': message.name,
         'message_description': message.desc,
     }
