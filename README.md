@@ -15,6 +15,10 @@ Simple
 pip install hl7tojson
 ```
 
+## Testing
+```shell
+python -m unittest
+```
 
 ## Example
 ```python
