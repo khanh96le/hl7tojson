@@ -1,6 +1,5 @@
 # HL7 to JSON
 
-[![Demo Github Action](https://github.com/khanh96le/hl7tojson/actions/workflows/github-actions-demo.yml/badge.svg)](https://github.com/khanh96le/hl7tojson/actions/workflows/github-actions-demo.yml)
 [![Build and Test](https://github.com/khanh96le/hl7tojson/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/khanh96le/hl7tojson/actions/workflows/build-and-test.yml)
 
 
