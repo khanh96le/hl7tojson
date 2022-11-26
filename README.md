@@ -1,4 +1,8 @@
-# HL7 to JSON
+<p align="center">
+  <br>
+  <img src="https://raw.githubusercontent.com/khanh96le/hl7tojson/master/logo.png"/>
+  <br/>
+</p>
 
 A simple library to convert HL7 message version 2 to json with human readable 
 description
