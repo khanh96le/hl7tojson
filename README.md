@@ -4,6 +4,9 @@
   <br/>
 </p>
 
+[![Build and Test](https://github.com/khanh96le/hl7tojson/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/khanh96le/hl7tojson/actions/workflows/build-and-test.yml)
+
+
 A simple library to convert HL7 message version 2 to json with human readable 
 description
 
@@ -15,6 +18,10 @@ Simple
 pip install hl7tojson
 ```
 
+## Testing
+```shell
+python -m unittest
+```
 
 ## Example
 ```python
