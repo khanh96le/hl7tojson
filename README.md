@@ -1,4 +1,8 @@
-# HL7 to JSON
+<p align="center">
+  <br>
+  <img src="https://raw.githubusercontent.com/khanh96le/hl7tojson/master/logo.png"/>
+  <br/>
+</p>
 
 [![Build and Test](https://github.com/khanh96le/hl7tojson/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/khanh96le/hl7tojson/actions/workflows/build-and-test.yml)
 
