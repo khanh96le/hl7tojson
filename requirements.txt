@@ -1,2 +1,2 @@
 hl7==0.3.4
-requests==2.20.0
+requests==2.31.0
